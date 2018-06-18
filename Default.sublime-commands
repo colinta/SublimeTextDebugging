@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "TextDebugging - print(selection)",
+        "command": "text_debugging"
+    }
+]

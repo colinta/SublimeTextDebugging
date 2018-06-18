@@ -1,0 +1,13 @@
+{
+  "name": "TextDebugging",
+  "description": "Adds prinf-style debugging.",
+  "author": "Colin T.A. Gray (colinta)",
+  "details": "https://github.com/colinta/SublimeTextDebugging",
+  "labels": ["text manipulation"],
+  "releases": [
+    {
+      "details": "https://github.com/colinta/SublimeTextDebugging/tags",
+      "sublime_text": ">=3000"
+    }
+  ]
+}

@@ -107,12 +107,12 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
             else:
                 s = self.view.substr(region)
                 if debug:
-                    debug += "\n"
+                    debug += ',\n'
                 if ' ' in s:
                     var = "({0})".format(s)
                 else:
                     var = s
-                debug += "{s}: #{{{var}.inspect}}".format(s=s.replace("\"", r'\"'), var=var)
+                debug += '''  "{s}: #{{{var}.inspect}}"'''.format(s=s.replace("\"", r'\"'), var=var)
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -131,14 +131,20 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '("=============== {name} line #{{__LINE__}} ==============='.format(name=name)
+            output = puts + '('
             if debug:
-                output += '\n=============== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===============\n'
+                output += '["=============== {name} line #{{__LINE__}} ===============",'.format(name=name)
+                output += '\n  "=============== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===============",\n'
                 output += debug
-            output += '")'
+                output += ']'
+            else:
+                output += '"=============== {name} line #{{__LINE__}} ==============="'.format(name=name)
+            output += ')'
 
             for empty in empty_regions:
-                self.view.insert(edit, empty.a, output)
+                indent = indent_at(self.view, empty)
+                line_output = output.replace("\n", "\n{0}".format(indent))
+                self.view.insert(edit, empty.a, line_output)
 
         if error:
             sublime.status_message(error)

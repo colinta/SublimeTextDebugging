@@ -153,12 +153,16 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
 
 
 class TextDebuggingSwift(sublime_plugin.TextCommand):
-    def run(self, edit, puts="print"):
+    def run(self, edit, puts=None):
         error = None
         empty_regions = []
         debug = ''
         debug_vars = []
         regions = list(self.view.sel())
+        if not puts and self.view.settings().get('swift.print'):
+            puts = self.view.settings().get('swift.print')
+        else:
+            puts = "print"
 
         if self.view.settings().get('translate_tabs_to_spaces'):
             tab = ' ' * self.view.settings().get('tab_size')

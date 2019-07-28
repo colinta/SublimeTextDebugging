@@ -114,7 +114,7 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
                     var = "({0})".format(s)
                 else:
                     var = s
-                debug += '''  "{s}: #{{{var}.inspect}}"'''.format(s=s.replace("\"", r'\"'), var=var)
+                debug += '''  "{s}: #{{{var}.inspect}}"'''.format(s=s.replace('"', r'\"'), var=var)
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -189,7 +189,7 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
             for (s, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += puts + "(\"{s}: \({var})\")".format(s=s.replace("\"", r'\"'), var=var)
+                debug += puts + "(\"{s}: \({var})\")".format(s=s.replace('"', r'\"'), var=var)
 
             output = puts + '("=============== \(#file) line \(#line) ===============")'
             if debug:
@@ -242,7 +242,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
             for (s, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += puts + "(\"{s}: #{{inspect({var})}}\")".format(s=s.replace("\"", r'\"'), var=var)
+                debug += puts + "(\"{s}: #{{inspect({var})}}\")".format(s=s.replace('"', r'\"'), var=var)
 
             output = puts + '("=============== #{__ENV__.file} line #{__ENV__.line} ===============")'
             if debug:
@@ -278,7 +278,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
                 s = self.view.substr(region)
                 debug += "\\n\\\n"
                 debug_vars += ", "
-                debug += "{s}: %@".format(s=s.replace("\"", r'\"'))
+                debug += "{s}: %@".format(s=s.replace('"', r'\"'))
                 debug_vars += s
                 self.view.sel().subtract(region)
         if not debug_vars:

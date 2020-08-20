@@ -29,7 +29,9 @@ class TextDebugging(sublime_plugin.TextCommand):
             self.view.run_command('text_debugging_objc', kwargs)
         elif self.view.score_selector(location, 'source.swift'):
             self.view.run_command('text_debugging_swift', kwargs)
-        elif self.view.score_selector(location, 'source.js'):
+        elif self.view.score_selector(location, 'source.js') or self.view.score_selector(location, 'source.jsx'):
+            self.view.run_command('text_debugging_js', kwargs)
+        elif self.view.score_selector(location, 'source.ts') or self.view.score_selector(location, 'source.tsx'):
             self.view.run_command('text_debugging_js', kwargs)
         elif self.view.score_selector(location, 'source.php'):
             self.view.run_command('text_debugging_php', kwargs)

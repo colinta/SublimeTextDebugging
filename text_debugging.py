@@ -522,8 +522,6 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
             sublime.status_message(error)
 
 
-
-
 class TextDebuggingElm(sublime_plugin.TextCommand):
     def run(self, edit, puts="Debug.log"):
         error = None

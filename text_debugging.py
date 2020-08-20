@@ -356,14 +356,14 @@ class TextDebuggingJs(sublime_plugin.TextCommand):
 
             output = puts + '(\'=============== {name} at line line_no ===============\');\n'.format(name=name)
             if debugs:
-                output += puts + "({ "
+                output += puts + "(JSON.stringify({ "
                 first = True
                 for debug in debugs:
                     if not first:
                         output += ', '
                     first = False
                     output += debug
-                output += " })\n"
+                output += " }, null, '  '))\n"
             output = output[:-1]
 
             for empty in empty_regions:

@@ -30,9 +30,9 @@ class TextDebugging(sublime_plugin.TextCommand):
         elif self.view.score_selector(location, 'source.swift'):
             self.view.run_command('text_debugging_swift', kwargs)
         elif self.view.score_selector(location, 'source.js') or self.view.score_selector(location, 'source.jsx'):
-            self.view.run_command('text_debugging_js', kwargs)
+            self.view.run_command('text_debugging_javascript', kwargs)
         elif self.view.score_selector(location, 'source.ts') or self.view.score_selector(location, 'source.tsx'):
-            self.view.run_command('text_debugging_js', kwargs)
+            self.view.run_command('text_debugging_javascript', kwargs)
         elif self.view.score_selector(location, 'source.php'):
             self.view.run_command('text_debugging_php', kwargs)
         elif self.view.score_selector(location, 'source.java'):
@@ -321,7 +321,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
             sublime.status_message(error)
 
 
-class TextDebuggingJs(sublime_plugin.TextCommand):
+class TextDebuggingJavascript(sublime_plugin.TextCommand):
     def run(self, edit, puts="console.log"):
         error = None
         empty_regions = []
@@ -356,14 +356,14 @@ class TextDebuggingJs(sublime_plugin.TextCommand):
 
             output = puts + '(\'=============== {name} at line line_no ===============\');\n'.format(name=name)
             if debugs:
-                output += puts + "(JSON.stringify({ "
+                output += puts + "({"
                 first = True
                 for debug in debugs:
                     if not first:
                         output += ', '
                     first = False
                     output += debug
-                output += " }, null, '  '))\n"
+                output += "});\n"
             output = output[:-1]
 
             for empty in empty_regions:

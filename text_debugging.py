@@ -45,6 +45,10 @@ class TextDebugging(sublime_plugin.TextCommand):
             self.view.run_command('text_debugging_elm', kwargs)
         elif self.view.score_selector(location, 'source.scala'):
             self.view.run_command('text_debugging_scala', kwargs)
+        elif self.view.score_selector(location, 'source.arduino'):
+            self.view.run_command('text_debugging_arduino', kwargs)
+        elif self.view.score_selector(location, 'source.shell'):
+            self.view.run_command('text_debugging_shell', kwargs)
         else:
             sublime.status_message('No support for the current language grammar.')
 
@@ -608,6 +612,101 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
             output = puts + '("=============== {name} at line line_no ===============")\n'.format(name=name)
             for debug in debugs:
                 output += puts + "({debug})\n".format(debug=debug)
+            output = output[:-1]
+
+            for empty in empty_regions:
+                indent = indent_at(self.view, empty)
+                line_no = self.view.rowcol(empty.a)[0] + 1
+                line_output = output.replace("\n", "\n{0}".format(indent)).replace("line_no", str(line_no))
+                self.view.insert(edit, empty.a, line_output)
+
+        if error:
+            sublime.status_message(error)
+
+
+class TextDebuggingArduino(sublime_plugin.TextCommand):
+    def run(self, edit, puts="Serial.println", put="Serial.print"):
+        error = None
+        empty_regions = []
+        debugs = []
+        regions = list(self.view.sel())
+        for region in regions:
+            if not region:
+                empty_regions.append(region)
+            else:
+                selection = self.view.substr(region)
+                debugs += ['{put}("{s_escaped} = ");'.format(put=put, s_escaped=selection.replace('"', '\\"'))]
+                debugs += ['{puts}({selection});'.format(puts=puts, selection=selection)]
+                self.view.sel().subtract(region)
+
+        # any edits that are performed will happen in reverse; this makes it
+        # easy to keep region.a and region.b pointing to the correct locations
+        def get_end(region):
+            return region.end()
+        empty_regions.sort(key=get_end, reverse=True)
+
+        if not empty_regions:
+            sublime.status_message('You must place an empty cursor somewhere')
+        else:
+            if self.view.file_name():
+                name = os.path.basename(self.view.file_name())
+            elif self.view.name():
+                name = self.view.name()
+            else:
+                name = 'Untitled'
+
+            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
+            for debug in debugs:
+                output += "{debug}\n".format(debug=debug)
+            output = output[:-1]
+
+            for empty in empty_regions:
+                indent = indent_at(self.view, empty)
+                line_no = self.view.rowcol(empty.a)[0] + 1
+                line_output = output.replace("\n", "\n{0}".format(indent)).replace("line_no", str(line_no))
+                self.view.insert(edit, empty.a, line_output)
+
+        if error:
+            sublime.status_message(error)
+
+
+class TextDebuggingShell(sublime_plugin.TextCommand):
+    def run(self, edit, puts="echo"):
+        error = None
+        empty_regions = []
+        debugs = []
+        regions = list(self.view.sel())
+        for region in regions:
+            if not region:
+                empty_regions.append(region)
+            else:
+                selection = self.view.substr(region)
+                selection_var = selection
+
+                if re.match(r'^\w+$', selection_var) and not selection_var.startswith("$"):
+                    selection_var = "$" + selection_var
+                debugs += ["'{s_escaped}:' {selection_var}".format(selection_var=selection_var, s_escaped=selection.replace('"', '\\"'))]
+                self.view.sel().subtract(region)
+
+        # any edits that are performed will happen in reverse; this makes it
+        # easy to keep region.a and region.b pointing to the correct locations
+        def get_end(region):
+            return region.end()
+        empty_regions.sort(key=get_end, reverse=True)
+
+        if not empty_regions:
+            sublime.status_message('You must place an empty cursor somewhere')
+        else:
+            if self.view.file_name():
+                name = os.path.basename(self.view.file_name())
+            elif self.view.name():
+                name = self.view.name()
+            else:
+                name = 'Untitled'
+
+            output = "{puts} '=========== {name} at line line_no ==========='\n".format(puts=puts, name=name)
+            for debug in debugs:
+                output += "{puts} {debug}\n".format(puts=puts, debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:

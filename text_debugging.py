@@ -89,14 +89,14 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
             name = 'Untitled'
 
         if debug:
-            output = '{puts}("""=============== {name} at line {{0}} ==============='.format(puts=puts, name=name)
+            output = '{puts}("""=========== {name} at line {{0}} ==========='.format(puts=puts, name=name)
             output += "\n" + debug + "\n"
             output += '""".format(__import__(\'sys\')._getframe().f_lineno - {lines}, '.format(lines=1 + len(debug_vars))
             for var in debug_vars:
                 output += var.strip() + ', '
             output += '))'
         else:
-            output = '{puts}("=============== {name} at line {{0}} ===============".format(__import__(\'sys\')._getframe().f_lineno))'.format(puts=puts, name=name)
+            output = '{puts}("=========== {name} at line {{0}} ===========".format(__import__(\'sys\')._getframe().f_lineno))'.format(puts=puts, name=name)
 
         for empty in empty_regions:
             self.view.insert(edit, empty.a, output)
@@ -143,12 +143,12 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
 
             output = '{puts}('.format(puts=puts)
             if debug:
-                output += '["=============== {name} line #{{__LINE__}} ===============",'.format(name=name)
-                output += '\n  "=============== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===============",\n'
+                output += '["=========== {name} line #{{__LINE__}} ===========",'.format(name=name)
+                output += '\n  "=========== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===========",\n'
                 output += debug
                 output += ']'
             else:
-                output += '"=============== {name} line #{{__LINE__}} ==============="'.format(name=name)
+                output += '"=========== {name} line #{{__LINE__}} ==========="'.format(name=name)
             output += ')'
 
             for empty in empty_regions:
@@ -203,7 +203,7 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
                     debug += "\n"
                 debug += "{puts}(\"{selection}: \\({var})\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
 
-            output = '{puts}("=============== \\(#file) line \\(#line) ===============")'.format(puts=puts)
+            output = '{puts}("=========== \\(#file) line \\(#line) ===========")'.format(puts=puts)
             if debug:
                 output += "\n" + debug
 
@@ -256,7 +256,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
                     debug += "\n"
                 debug += "{puts}(\"{selection}: #{{inspect({var})}}\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
 
-            output = '{puts}("=============== #{__ENV__.file} line #{__ENV__.line} ===============")'.format(puts=puts)
+            output = '{puts}("=========== #{__ENV__.file} line #{__ENV__.line} ===========")'.format(puts=puts)
             if debug:
                 output += "\n" + debug
 
@@ -312,7 +312,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}(@"=============== {name}:%selection at line %i ==============='.format(puts=puts, name=name)
+            output = '{puts}(@"=========== {name}:%selection at line %i ==========='.format(puts=puts, name=name)
             output += debug
             output += '"'
             output += debug_vars
@@ -358,7 +358,7 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}(\'=============== {name} at line line_no ===============\');\n'.format(puts=puts, name=name)
+            output = '{puts}(\'=========== {name} at line line_no ===========\');\n'.format(puts=puts, name=name)
             if debugs:
                 output += puts + "({"
                 first = True
@@ -412,7 +412,7 @@ class TextDebuggingPhp(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '''$__LINE__ = __LINE__;error_log("=============== {name} at line $__LINE__ ===============");'''.format(name=name)
+            output = '''$__LINE__ = __LINE__;error_log("=========== {name} at line $__LINE__ ===========");'''.format(name=name)
             if debugs:
                 output += '''
 ob_start();
@@ -464,7 +464,7 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=============== {name} at line line_no ===============");\n'.format(puts=puts, name=name)
+            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
             for debug in debugs:
                 output += "{puts}({debug});\n".format(puts=puts, debug=debug)
             output = output[:-1]
@@ -511,7 +511,7 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=============== {name} at line line_no ===============")\n'.format(puts=puts, name=name)
+            output = '{puts}("=========== {name} at line line_no ===========")\n'.format(puts=puts, name=name)
             for debug in debugs:
                 output += "{puts}({debug})\n".format(puts=puts, debug=debug)
             output = output[:-1]
@@ -609,7 +609,7 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=============== {name} at line line_no ===============")\n'.format(puts=puts, name=name)
+            output = '{puts}("=========== {name} at line line_no ===========")\n'.format(puts=puts, name=name)
             for debug in debugs:
                 output += "{puts}({debug})\n".format(puts=puts, debug=debug)
             output = output[:-1]
@@ -655,7 +655,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=============== {name} at line line_no ===============");\n'.format(puts=puts, name=name)
+            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
             for debug in debugs:
                 output += "{debug}\n".format(debug=debug)
             output = output[:-1]
@@ -704,7 +704,7 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = "{puts} '=============== {name} at line line_no ==============='\n".format(puts=puts, name=name)
+            output = "{puts} '=========== {name} at line line_no ==========='\n".format(puts=puts, name=name)
             for debug in debugs:
                 output += "{puts} {debug}\n".format(puts=puts, debug=debug)
             output = output[:-1]

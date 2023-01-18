@@ -64,11 +64,11 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
+                selection = self.view.substr(region)
                 if debug:
                     debug += "\n"
-                debug += "{s}: {{{count}!r}}".format(s=s, count=1 + len(debug_vars))
-                debug_vars.append(s)
+                debug += "{selection}: {{{count}!r}}".format(selection=selection, count=1 + len(debug_vars))
+                debug_vars.append(selection)
                 self.view.sel().subtract(region)
 
         if not empty_regions:
@@ -89,14 +89,14 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
             name = 'Untitled'
 
         if debug:
-            output = puts + '("""=============== {name} at line {{0}} ==============='.format(name=name)
+            output = '{puts}("""=============== {name} at line {{0}} ==============='.format(puts=puts, name=name)
             output += "\n" + debug + "\n"
             output += '""".format(__import__(\'sys\')._getframe().f_lineno - {lines}, '.format(lines=1 + len(debug_vars))
             for var in debug_vars:
                 output += var.strip() + ', '
             output += '))'
         else:
-            output = puts + '("=============== {name} at line {{0}} ===============".format(__import__(\'sys\')._getframe().f_lineno))'.format(name=name)
+            output = '{puts}("=============== {name} at line {{0}} ===============".format(__import__(\'sys\')._getframe().f_lineno))'.format(puts=puts, name=name)
 
         for empty in empty_regions:
             self.view.insert(edit, empty.a, output)
@@ -115,14 +115,14 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
+                selection = self.view.substr(region)
                 if debug:
                     debug += ',\n'
-                if ' ' in s:
-                    var = "({0})".format(s)
+                if ' ' in selection:
+                    var = "({0})".format(selection)
                 else:
-                    var = s
-                debug += '''  "{s}: #{{{var}.inspect}}"'''.format(s=s.replace('"', r'\"'), var=var)
+                    var = selection
+                debug += '''  "{selection}: #{{{var}.inspect}}"'''.format(selection=selection.replace('"', r'\"'), var=var)
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -141,7 +141,7 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '('
+            output = '{puts}('.format(puts=puts)
             if debug:
                 output += '["=============== {name} line #{{__LINE__}} ===============",'.format(name=name)
                 output += '\n  "=============== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===============",\n'
@@ -181,12 +181,12 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                if ' ' in s:
-                    var = "({0})".format(s)
+                selection = self.view.substr(region)
+                if ' ' in selection:
+                    var = "({0})".format(selection)
                 else:
-                    var = s
-                debug_vars.append((s, var))
+                    var = selection
+                debug_vars.append((selection, var))
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -198,12 +198,12 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
         if not empty_regions:
             sublime.status_message('You must place an empty cursor somewhere')
         else:
-            for (s, var) in debug_vars:
+            for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += puts + "(\"{s}: \({var})\")".format(s=s.replace('"', r'\"'), var=var)
+                debug += "{puts}(\"{selection}: \\({var})\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
 
-            output = puts + '("=============== \(#file) line \(#line) ===============")'
+            output = '{puts}("=============== \\(#file) line \\(#line) ===============")'.format(puts=puts)
             if debug:
                 output += "\n" + debug
 
@@ -234,12 +234,12 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                if ' ' in s:
-                    var = "({0})".format(s)
+                selection = self.view.substr(region)
+                if ' ' in selection:
+                    var = "({0})".format(selection)
                 else:
-                    var = s
-                debug_vars.append((s, var))
+                    var = selection
+                debug_vars.append((selection, var))
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -251,12 +251,12 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
         if not empty_regions:
             sublime.status_message('You must place an empty cursor somewhere')
         else:
-            for (s, var) in debug_vars:
+            for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += puts + "(\"{s}: #{{inspect({var})}}\")".format(s=s.replace('"', r'\"'), var=var)
+                debug += "{puts}(\"{selection}: #{{inspect({var})}}\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
 
-            output = puts + '("=============== #{__ENV__.file} line #{__ENV__.line} ===============")'
+            output = '{puts}("=============== #{__ENV__.file} line #{__ENV__.line} ===============")'.format(puts=puts)
             if debug:
                 output += "\n" + debug
 
@@ -287,11 +287,11 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
             else:
                 if not debug_vars:
                     debug_vars = ', __PRETTY_FUNCTION__, __LINE__ - {0}'.format(not_empty_regions)
-                s = self.view.substr(region)
+                selection = self.view.substr(region)
                 debug += "\\n\\\n"
                 debug_vars += ", "
-                debug += "{s}: %@".format(s=s.replace('"', r'\"'))
-                debug_vars += s
+                debug += "{selection}: %@".format(selection=selection.replace('"', r'\"'))
+                debug_vars += selection
                 self.view.sel().subtract(region)
         if not debug_vars:
             debug_vars = ', __PRETTY_FUNCTION__, __LINE__'
@@ -312,7 +312,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '(@"=============== {name}:%s at line %i ==============='.format(name=name)
+            output = '{puts}(@"=============== {name}:%selection at line %i ==============='.format(puts=puts, name=name)
             output += debug
             output += '"'
             output += debug_vars
@@ -335,11 +335,11 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                if re.match(r'^\w+$', s):
-                    debugs.append(s)
+                selection = self.view.substr(region)
+                if re.match(r'^\w+$', selection):
+                    debugs.append(selection)
                 else:
-                    debugs.append("'{s_escaped}': {s}".format(s=s, s_escaped=s.replace("'", "\\'")))
+                    debugs.append("'{s_escaped}': {selection}".format(selection=selection, s_escaped=selection.replace("'", "\\'")))
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -358,7 +358,7 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '(\'=============== {name} at line line_no ===============\');\n'.format(name=name)
+            output = '{puts}(\'=============== {name} at line line_no ===============\');\n'.format(puts=puts, name=name)
             if debugs:
                 output += puts + "({"
                 first = True
@@ -390,10 +390,10 @@ class TextDebuggingPhp(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
+                selection = self.view.substr(region)
                 if debugs:
                     debugs += ", "
-                debugs += "'{0}' => {1}".format(s.replace('\'', '\\\''), s)
+                debugs += "'{0}' => {1}".format(selection.replace('\'', '\\\''), selection)
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -444,8 +444,8 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                debugs += ['"{s_escaped}:", {s}'.format(s=s, s_escaped=s.replace('"', '\\"'))]
+                selection = self.view.substr(region)
+                debugs += ['"{s_escaped}:", {selection}'.format(selection=selection, s_escaped=selection.replace('"', '\\"'))]
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -464,9 +464,9 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '("=============== {name} at line line_no ===============");\n'.format(name=name)
+            output = '{puts}("=============== {name} at line line_no ===============");\n'.format(puts=puts, name=name)
             for debug in debugs:
-                output += puts + "({debug});\n".format(debug=debug)
+                output += "{puts}({debug});\n".format(puts=puts, debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -491,8 +491,8 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                debugs += ['"{s_escaped}: ${{{s}}}"'.format(s=s, s_escaped=s.replace('"', '\\"'))]
+                selection = self.view.substr(region)
+                debugs += ['"{s_escaped}: ${{{selection}}}"'.format(selection=selection, s_escaped=selection.replace('"', '\\"'))]
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -511,9 +511,9 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '("=============== {name} at line line_no ===============")\n'.format(name=name)
+            output = '{puts}("=============== {name} at line line_no ===============")\n'.format(puts=puts, name=name)
             for debug in debugs:
-                output += puts + "({debug})\n".format(debug=debug)
+                output += "{puts}({debug})\n".format(puts=puts, debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -543,12 +543,12 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                if ' ' in s:
-                    var = "({0})".format(s)
+                selection = self.view.substr(region)
+                if ' ' in selection:
+                    var = "({0})".format(selection)
                 else:
-                    var = s
-                debug_vars.append((s, var))
+                    var = selection
+                debug_vars.append((selection, var))
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -560,10 +560,10 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
         if not empty_regions:
             sublime.status_message('You must place an empty cursor somewhere')
         else:
-            for (s, var) in debug_vars:
+            for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "|> " + puts + " \"{s}\"".format(s=s.replace('"', r'\"'))
+                debug += "|> " + "{puts} \"{selection}\"".format(puts=puts, selection=selection.replace('"', r'\"'))
 
             if not debug:
                 output = '"here"'
@@ -589,8 +589,8 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
             if not region:
                 empty_regions.append(region)
             else:
-                s = self.view.substr(region)
-                debugs += ['s"{s_escaped}: ${{{s}}}"'.format(s=s, s_escaped=s.replace('"', '\\"'))]
+                selection = self.view.substr(region)
+                debugs += ['selection"{s_escaped}: ${{{selection}}}"'.format(selection=selection, s_escaped=selection.replace('"', '\\"'))]
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -609,9 +609,9 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = puts + '("=============== {name} at line line_no ===============")\n'.format(name=name)
+            output = '{puts}("=============== {name} at line line_no ===============")\n'.format(puts=puts, name=name)
             for debug in debugs:
-                output += puts + "({debug})\n".format(debug=debug)
+                output += "{puts}({debug})\n".format(puts=puts, debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -655,7 +655,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
+            output = '{puts}("=============== {name} at line line_no ===============");\n'.format(puts=puts, name=name)
             for debug in debugs:
                 output += "{debug}\n".format(debug=debug)
             output = output[:-1]
@@ -704,7 +704,7 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = "{puts} '=========== {name} at line line_no ==========='\n".format(puts=puts, name=name)
+            output = "{puts} '=============== {name} at line line_no ==============='\n".format(puts=puts, name=name)
             for debug in debugs:
                 output += "{puts} {debug}\n".format(puts=puts, debug=debug)
             output = output[:-1]

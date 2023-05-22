@@ -336,10 +336,13 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
                 empty_regions.append(region)
             else:
                 selection = self.view.substr(region)
-                if re.match(r'^\w+$', selection):
+                if selection == 'this':
+                    debugs.append('this: this')
+                elif re.match(r'^\w+$', selection):
                     debugs.append(selection)
                 else:
-                    debugs.append("'{s_escaped}': {selection}".format(selection=selection, s_escaped=selection.replace("'", "\\'")))
+                    s_escaped = selection.replace("'", "\\'")
+                    debugs.append("'{s_escaped}': {selection}".format(selection=selection, s_escaped=s_escaped))
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it

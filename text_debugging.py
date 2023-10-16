@@ -1,4 +1,4 @@
-import os.path
+# import os.path
 import re
 import json
 from functools import cmp_to_key
@@ -18,43 +18,48 @@ class TextDebugging(sublime_plugin.TextCommand):
         if not len(self.view.sel()):
             return
 
-        location = self.view.sel()[0].begin()
-        if self.view.score_selector(location, 'source.python'):
-            self.view.run_command('text_debugging_python', kwargs)
-        elif self.view.score_selector(location, 'source.ruby.mac') or self.view.score_selector(location, 'source.rubymotion'):
-            self.view.run_command('text_debugging_ruby_motion', kwargs)
-        elif self.view.score_selector(location, 'source.ruby'):
-            self.view.run_command('text_debugging_ruby', kwargs)
-        elif self.view.score_selector(location, 'source.objc'):
-            self.view.run_command('text_debugging_objc', kwargs)
-        elif self.view.score_selector(location, 'source.swift'):
-            self.view.run_command('text_debugging_swift', kwargs)
-        elif self.view.score_selector(location, 'source.js') or self.view.score_selector(location, 'source.jsx'):
-            self.view.run_command('text_debugging_javascript', kwargs)
-        elif self.view.score_selector(location, 'source.ts') or self.view.score_selector(location, 'source.tsx'):
-            self.view.run_command('text_debugging_javascript', kwargs)
-        elif self.view.score_selector(location, 'source.php'):
-            self.view.run_command('text_debugging_php', kwargs)
-        elif self.view.score_selector(location, 'source.java'):
-            self.view.run_command('text_debugging_java', kwargs)
-        elif self.view.score_selector(location, 'source.Kotlin'):
-            self.view.run_command('text_debugging_kotlin', kwargs)
-        elif self.view.score_selector(location, 'source.elixir'):
-            self.view.run_command('text_debugging_elixir', kwargs)
-        elif self.view.score_selector(location, 'source.elm'):
-            self.view.run_command('text_debugging_elm', kwargs)
-        elif self.view.score_selector(location, 'source.scala'):
-            self.view.run_command('text_debugging_scala', kwargs)
-        elif self.view.score_selector(location, 'source.arduino'):
-            self.view.run_command('text_debugging_arduino', kwargs)
-        elif self.view.score_selector(location, 'source.shell'):
-            self.view.run_command('text_debugging_shell', kwargs)
+        if self.view.settings().get('translate_tabs_to_spaces'):
+            tab = ' ' * self.view.settings().get('tab_size')
         else:
-            sublime.status_message('No support for the current language grammar.')
+            tab = "\t"
+        kwargs['tab'] = tab
+
+        location = self.view.sel()[0].begin()
+        selectors = [
+            ['arduino', 'text_debugging_arduino'],
+            ['elixir', 'text_debugging_elixir'],
+            ['elm', 'text_debugging_elm'],
+            ['java', 'text_debugging_java'],
+            ['js', 'text_debugging_javascript'],
+            ['jsx', 'text_debugging_javascript'],
+            ['Kotlin', 'text_debugging_kotlin'],
+            ['lua', 'text_debugging_lua'],
+            ['objc', 'text_debugging_objc'],
+            ['php', 'text_debugging_php'],
+            ['python', 'text_debugging_python'],
+            ['ruby', 'text_debugging_ruby'],
+            ['scala', 'text_debugging_scala'],
+            ['shell', 'text_debugging_shell'],
+            ['swift', 'text_debugging_swift'],
+            ['ts', 'text_debugging_javascript'],
+            ['tsx', 'text_debugging_javascript'],
+        ]
+
+        for lang, command in selectors:
+            source = "source.{}".format(lang)
+            score = self.view.score_selector(location, source)
+            if score:
+                config = "{}.print".format(lang)
+                if 'puts' not in kwargs and self.view.settings().get(config):
+                    kwargs['puts'] = self.view.settings().get(config)
+
+                self.view.run_command(command, kwargs)
+                return
+        sublime.status_message('No support for the current language grammar.')
 
 
 class TextDebuggingPython(sublime_plugin.TextCommand):
-    def run(self, edit, puts="print"):
+    def run(self, edit, tab, puts="print"):
         error = None
         empty_regions = []
         debug = ''
@@ -89,14 +94,14 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
             name = 'Untitled'
 
         if debug:
-            output = '{puts}("""=========== {name} at line {{0}} ==========='.format(puts=puts, name=name)
+            output = puts + '("""=========== {name} at line {{0}} ==========='.format(name=name)
             output += "\n" + debug + "\n"
             output += '""".format(__import__(\'sys\')._getframe().f_lineno - {lines}, '.format(lines=1 + len(debug_vars))
             for var in debug_vars:
                 output += var.strip() + ', '
             output += '))'
         else:
-            output = '{puts}("=========== {name} at line {{0}} ===========".format(__import__(\'sys\')._getframe().f_lineno))'.format(puts=puts, name=name)
+            output = puts + '("=========== {name} at line {{0}} ===========".format(__import__(\'sys\')._getframe().f_lineno))'.format(name=name)
 
         for empty in empty_regions:
             self.view.insert(edit, empty.a, output)
@@ -106,7 +111,7 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
 
 
 class TextDebuggingRuby(sublime_plugin.TextCommand):
-    def run(self, edit, puts="puts"):
+    def run(self, edit, tab, puts="puts"):
         error = None
         empty_regions = []
         debug = ''
@@ -141,7 +146,7 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}('.format(puts=puts)
+            output = puts + '('
             if debug:
                 output += '["=========== {name} line #{{__LINE__}} ===========",'.format(name=name)
                 output += '\n  "=========== #{self.class == Class ? self.name + \'##\' : self.class.name + \'#\'}#{__method__} ===========",\n'
@@ -161,21 +166,12 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
 
 
 class TextDebuggingSwift(sublime_plugin.TextCommand):
-    def run(self, edit, puts=None):
+    def run(self, edit, tab, puts="print"):
         error = None
         empty_regions = []
         debug = ''
         debug_vars = []
         regions = list(self.view.sel())
-        if not puts and self.view.settings().get('swift.print'):
-            puts = self.view.settings().get('swift.print')
-        else:
-            puts = "print"
-
-        if self.view.settings().get('translate_tabs_to_spaces'):
-            tab = ' ' * self.view.settings().get('tab_size')
-        else:
-            tab = "\t"
 
         for region in regions:
             if not region:
@@ -201,9 +197,9 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "{puts}(\"{selection}: \\({var})\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
+                debug += "{puts}(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
 
-            output = '{puts}("=========== \\(#file) line \\(#line) ===========")'.format(puts=puts)
+            output = puts + '("=========== \\(#file) line \\(#line) ===========")'
             if debug:
                 output += "\n" + debug
 
@@ -218,17 +214,12 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
 
 
 class TextDebuggingElixir(sublime_plugin.TextCommand):
-    def run(self, edit, puts="IO.puts"):
+    def run(self, edit, tab, puts="IO.puts"):
         error = None
         empty_regions = []
         debug = ''
         debug_vars = []
         regions = list(self.view.sel())
-
-        if self.view.settings().get('translate_tabs_to_spaces'):
-            tab = ' ' * self.view.settings().get('tab_size')
-        else:
-            tab = "\t"
 
         for region in regions:
             if not region:
@@ -254,9 +245,9 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "{puts}(\"{selection}: #{{inspect({var})}}\")".format(puts=puts, selection=selection.replace('"', r'\"'), var=var)
+                debug += "{puts}(\"{selection}: #{{inspect({var})}}\")".format(selection=selection.replace('"', r'\"'), var=var)
 
-            output = '{puts}("=========== #{__ENV__.file} line #{__ENV__.line} ===========")'.format(puts=puts)
+            output = puts + '("=========== #{__ENV__.file} line #{__ENV__.line} ===========")'
             if debug:
                 output += "\n" + debug
 
@@ -270,7 +261,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
 
 
 class TextDebuggingObjc(sublime_plugin.TextCommand):
-    def run(self, edit, puts="NSLog"):
+    def run(self, edit, tab, puts="NSLog"):
         error = None
         empty_regions = []
         debug = ''
@@ -312,7 +303,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}(@"=========== {name}:%selection at line %i ==========='.format(puts=puts, name=name)
+            output = puts + '(@"=========== {name}:%selection at line %i ==========='.format(name=name)
             output += debug
             output += '"'
             output += debug_vars
@@ -326,7 +317,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
 
 
 class TextDebuggingJavascript(sublime_plugin.TextCommand):
-    def run(self, edit, puts="console.log"):
+    def run(self, edit, tab, puts="console.log"):
         error = None
         empty_regions = []
         debugs = []
@@ -361,7 +352,7 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}(\'=========== {name} at line line_no ===========\');\n'.format(puts=puts, name=name)
+            output = puts + '(\'=========== {name} at line line_no ===========\');\n'.format(name=name)
             if debugs:
                 output += puts + "({"
                 first = True
@@ -432,13 +423,8 @@ array_map('error_log', explode("\\n", ob_get_clean()));
             sublime.status_message(error)
 
 
-class TextDebuggingRubyMotion(TextDebuggingRuby):
-    def run(self, edit, puts="NSLog"):
-        return super(TextDebuggingRubyMotion, self).run(edit, puts)
-
-
 class TextDebuggingJava(sublime_plugin.TextCommand):
-    def run(self, edit, puts="System.out.println"):
+    def run(self, edit, tab, puts="System.out.println"):
         error = None
         empty_regions = []
         debugs = []
@@ -467,9 +453,9 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
+            output = puts + '("=========== {name} at line line_no ===========");\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug});\n".format(puts=puts, debug=debug)
+                output += "{puts}({debug});\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -485,7 +471,7 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
 
 
 class TextDebuggingKotlin(sublime_plugin.TextCommand):
-    def run(self, edit, puts="println"):
+    def run(self, edit, tab, puts="println"):
         error = None
         empty_regions = []
         debugs = []
@@ -514,9 +500,9 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=========== {name} at line line_no ===========")\n'.format(puts=puts, name=name)
+            output = puts + '("=========== {name} at line line_no ===========")\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug})\n".format(puts=puts, debug=debug)
+                output += "{puts}({debug})\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -530,17 +516,12 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
 
 
 class TextDebuggingElm(sublime_plugin.TextCommand):
-    def run(self, edit, puts="Debug.log"):
+    def run(self, edit, tab, puts="Debug.log"):
         error = None
         empty_regions = []
         debug = ''
         debug_vars = []
         regions = list(self.view.sel())
-
-        if self.view.settings().get('translate_tabs_to_spaces'):
-            tab = ' ' * self.view.settings().get('tab_size')
-        else:
-            tab = "\t"
 
         for region in regions:
             if not region:
@@ -566,7 +547,7 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "|> " + "{puts} \"{selection}\"".format(puts=puts, selection=selection.replace('"', r'\"'))
+                debug += "|> " + "{puts} \"{selection}\"".format(selection=selection.replace('"', r'\"'))
 
             if not debug:
                 output = '"here"'
@@ -583,7 +564,7 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
 
 
 class TextDebuggingScala(sublime_plugin.TextCommand):
-    def run(self, edit, puts="println"):
+    def run(self, edit, tab, puts="println"):
         error = None
         empty_regions = []
         debugs = []
@@ -612,9 +593,9 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=========== {name} at line line_no ===========")\n'.format(puts=puts, name=name)
+            output = puts + '("=========== {name} at line line_no ===========")\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug})\n".format(puts=puts, debug=debug)
+                output += "{puts}({debug})\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -628,7 +609,7 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
 
 
 class TextDebuggingArduino(sublime_plugin.TextCommand):
-    def run(self, edit, puts="Serial.println", put="Serial.print"):
+    def run(self, edit, tab, puts="Serial.println", put="Serial.print"):
         error = None
         empty_regions = []
         debugs = []
@@ -638,8 +619,8 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
                 empty_regions.append(region)
             else:
                 selection = self.view.substr(region)
-                debugs += ['{put}("{s_escaped} = ");'.format(put=put, s_escaped=selection.replace('"', '\\"'))]
-                debugs += ['{puts}({selection});'.format(puts=puts, selection=selection)]
+                debugs += [put + '("{s_escaped} = ");'.format(put=put, s_escaped=selection.replace('"', '\\"'))]
+                debugs += [puts + '({selection});'.format(selection=selection)]
                 self.view.sel().subtract(region)
 
         # any edits that are performed will happen in reverse; this makes it
@@ -658,7 +639,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = '{puts}("=========== {name} at line line_no ===========");\n'.format(puts=puts, name=name)
+            output = puts + '("=========== {name} at line line_no ===========");\n'.format(name=name)
             for debug in debugs:
                 output += "{debug}\n".format(debug=debug)
             output = output[:-1]
@@ -674,7 +655,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
 
 
 class TextDebuggingShell(sublime_plugin.TextCommand):
-    def run(self, edit, puts="echo"):
+    def run(self, edit, tab, puts="echo"):
         error = None
         empty_regions = []
         debugs = []
@@ -707,15 +688,65 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = "{puts} '=========== {name} at line line_no ==========='\n".format(puts=puts, name=name)
+            output = "{puts} '=========== {name} at line line_no ==========='\n".format(name=name)
             for debug in debugs:
-                output += "{puts} {debug}\n".format(puts=puts, debug=debug)
+                output += "{puts} {debug}\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
                 indent = indent_at(self.view, empty)
                 line_no = self.view.rowcol(empty.a)[0] + 1
                 line_output = output.replace("\n", "\n{0}".format(indent)).replace("line_no", str(line_no))
+                self.view.insert(edit, empty.a, line_output)
+
+        if error:
+            sublime.status_message(error)
+
+
+class TextDebuggingLua(sublime_plugin.TextCommand):
+    def run(self, edit, tab, puts="print"):
+        error = None
+        empty_regions = []
+
+        debug = ''
+        debug_vars = []
+        regions = list(self.view.sel())
+
+        for region in regions:
+            if not region:
+                empty_regions.append(region)
+            else:
+                selection = self.view.substr(region)
+                if ' ' in selection:
+                    var = "({0})".format(selection)
+                else:
+                    var = selection
+                debug_vars.append((selection, var))
+                self.view.sel().subtract(region)
+
+        # any edits that are performed will happen in reverse; this makes it
+        # easy to keep region.a and region.b pointing to the correct locations
+        def get_end(region):
+            return region.end()
+        empty_regions.sort(key=get_end, reverse=True)
+
+        if not empty_regions:
+            sublime.status_message('You must place an empty cursor somewhere')
+        else:
+            for (selection, var) in debug_vars:
+                if debug:
+                    debug += "\n"
+                debug += "{puts}(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
+
+            output = puts + \
+                '("=========== ".. debug.getinfo(1).source:sub(2):match("^.*/(.*)$") ..' + \
+                '" at line ".. debug.getinfo(1).currentline .." ===========")'
+            if debug:
+                output += "\n" + debug
+
+            for empty in empty_regions:
+                indent = indent_at(self.view, empty)
+                line_output = output.replace("\n", "\n{0}".format(indent))
                 self.view.insert(edit, empty.a, line_output)
 
         if error:

@@ -55,7 +55,7 @@ class TextDebugging(sublime_plugin.TextCommand):
 
                 self.view.run_command(command, kwargs)
                 return
-        sublime.status_message('No support for the current language grammar.')
+        self.view.show_popup('No support for the current language grammar.')
 
 
 class TextDebuggingPython(sublime_plugin.TextCommand):
@@ -77,7 +77,7 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
                 self.view.sel().subtract(region)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
             return
 
         # any edits that are performed will happen in reverse; this makes it
@@ -107,7 +107,7 @@ class TextDebuggingPython(sublime_plugin.TextCommand):
             self.view.insert(edit, empty.a, output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingRuby(sublime_plugin.TextCommand):
@@ -137,7 +137,7 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -162,7 +162,7 @@ class TextDebuggingRuby(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingSwift(sublime_plugin.TextCommand):
@@ -192,7 +192,7 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             for (selection, var) in debug_vars:
                 if debug:
@@ -209,7 +209,7 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 
@@ -240,7 +240,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             for (selection, var) in debug_vars:
                 if debug:
@@ -257,7 +257,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingObjc(sublime_plugin.TextCommand):
@@ -294,7 +294,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -313,7 +313,7 @@ class TextDebuggingObjc(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingJavascript(sublime_plugin.TextCommand):
@@ -343,7 +343,7 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -371,7 +371,7 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingPhp(sublime_plugin.TextCommand):
@@ -397,7 +397,7 @@ class TextDebuggingPhp(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -420,7 +420,7 @@ array_map('error_log', explode("\\n", ob_get_clean()));
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingJava(sublime_plugin.TextCommand):
@@ -444,7 +444,7 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -465,7 +465,7 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 
@@ -491,7 +491,7 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -512,7 +512,7 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingElm(sublime_plugin.TextCommand):
@@ -542,7 +542,7 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             for (selection, var) in debug_vars:
                 if debug:
@@ -560,7 +560,7 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingScala(sublime_plugin.TextCommand):
@@ -584,7 +584,7 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -605,7 +605,7 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingArduino(sublime_plugin.TextCommand):
@@ -630,7 +630,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -651,7 +651,7 @@ class TextDebuggingArduino(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingShell(sublime_plugin.TextCommand):
@@ -679,7 +679,7 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
@@ -700,7 +700,7 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)
 
 
 class TextDebuggingLua(sublime_plugin.TextCommand):
@@ -731,7 +731,7 @@ class TextDebuggingLua(sublime_plugin.TextCommand):
         empty_regions.sort(key=get_end, reverse=True)
 
         if not empty_regions:
-            sublime.status_message('You must place an empty cursor somewhere')
+            self.view.show_popup('You must place an empty cursor somewhere')
         else:
             for (selection, var) in debug_vars:
                 if debug:
@@ -750,4 +750,4 @@ class TextDebuggingLua(sublime_plugin.TextCommand):
                 self.view.insert(edit, empty.a, line_output)
 
         if error:
-            sublime.status_message(error)
+            self.view.show_popup(error)

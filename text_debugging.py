@@ -1,5 +1,6 @@
 # import os.path
 import re
+import os
 import json
 from functools import cmp_to_key
 
@@ -197,7 +198,7 @@ class TextDebuggingSwift(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "{puts}(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
+                debug += puts + "(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
 
             output = puts + '("=========== \\(#file) line \\(#line) ===========")'
             if debug:
@@ -245,7 +246,7 @@ class TextDebuggingElixir(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "{puts}(\"{selection}: #{{inspect({var})}}\")".format(selection=selection.replace('"', r'\"'), var=var)
+                debug += puts + "(\"{selection}: #{{inspect({var})}}\")".format(selection=selection.replace('"', r'\"'), var=var)
 
             output = puts + '("=========== #{__ENV__.file} line #{__ENV__.line} ===========")'
             if debug:
@@ -455,7 +456,7 @@ class TextDebuggingJava(sublime_plugin.TextCommand):
 
             output = puts + '("=========== {name} at line line_no ===========");\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug});\n".format(debug=debug)
+                output += puts + "({debug});\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -502,7 +503,7 @@ class TextDebuggingKotlin(sublime_plugin.TextCommand):
 
             output = puts + '("=========== {name} at line line_no ===========")\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug})\n".format(debug=debug)
+                output += puts + "({debug})\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -547,7 +548,7 @@ class TextDebuggingElm(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "|> " + "{puts} \"{selection}\"".format(selection=selection.replace('"', r'\"'))
+                debug += "|> " + puts + " \"{selection}\"".format(selection=selection.replace('"', r'\"'))
 
             if not debug:
                 output = '"here"'
@@ -595,7 +596,7 @@ class TextDebuggingScala(sublime_plugin.TextCommand):
 
             output = puts + '("=========== {name} at line line_no ===========")\n'.format(name=name)
             for debug in debugs:
-                output += "{puts}({debug})\n".format(debug=debug)
+                output += puts + "({debug})\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -688,9 +689,9 @@ class TextDebuggingShell(sublime_plugin.TextCommand):
             else:
                 name = 'Untitled'
 
-            output = "{puts} '=========== {name} at line line_no ==========='\n".format(name=name)
+            output = puts + " '=========== {name} at line line_no ==========='\n".format(name=name)
             for debug in debugs:
-                output += "{puts} {debug}\n".format(debug=debug)
+                output += puts + " {debug}\n".format(debug=debug)
             output = output[:-1]
 
             for empty in empty_regions:
@@ -736,7 +737,7 @@ class TextDebuggingLua(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += "{puts}(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
+                debug += puts + "(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
 
             output = puts + \
                 '("=========== ".. debug.getinfo(1).source:sub(2):match("^.*/(.*)$") ..' + \

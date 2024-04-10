@@ -348,6 +348,9 @@ class TextDebuggingJavascript(sublime_plugin.TextCommand):
         else:
             if self.view.file_name():
                 name = os.path.basename(self.view.file_name())
+                if name in ['index.ts', 'index.js']:
+                    dirname = os.path.basename(os.path.dirname(self.view.file_name())) + '/'
+                    name = dirname + name
             elif self.view.name():
                 name = self.view.name()
             else:

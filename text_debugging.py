@@ -740,7 +740,7 @@ class TextDebuggingLua(sublime_plugin.TextCommand):
             for (selection, var) in debug_vars:
                 if debug:
                     debug += "\n"
-                debug += puts + "(\"{selection}: \\({var})\")".format(selection=selection.replace('"', r'\"'), var=var)
+                debug += puts + "(\"{selection}: \" .. {var})".format(selection=selection.replace('"', r'\"'), var=var)
 
             output = puts + \
                 '("=========== ".. debug.getinfo(1).source:sub(2):match("^.*/(.*)$") ..' + \

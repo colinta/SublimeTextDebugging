@@ -9,25 +9,17 @@ static line numbers if the language doesn't have "compile time" line numbers.
 Installation
 ------------
 
-1. Using Package Control, install "TextDebugging"
+Using Package Control, install "TextDebugging" or clone this repo in your packages folder.
 
-Or:
-
-1. Open the Sublime Text 3 Packages folder
-
-    - OS X: ~/Library/Application Support/Sublime Text 3/Packages/
-    - Windows: %APPDATA%/Sublime Text 3/Packages/
-    - Linux: ~/.Sublime Text 3/Packages/
-
-2. clone this repo
-3. Install keymaps for the commands (see Example.sublime-keymap for my preferred keys)
+I recommended you add key bindings for the commands. I've included my preferred bindings below.
+Copy them to your key bindings file (⌘⇧,).
 
 Commands
 --------
 
-`text_debugging`: Select multiple variables, then put an empty cursor somewhere
-and run this command (default: `ctrl+p` twice or `ctrl+p,p`).  You'll get some
-good debug output that looks like this (Python example):
+`text_debugging`: First, select multiple variables. Then put an empty cursor
+somewhere and run this command (recommended: `ctrl+p`).  You'll
+get some good debug output that looks like this (Python example):
 
 ```python
 print("""=============== Untitled at line {0} ===============
@@ -45,3 +37,11 @@ looks: #{looks.inspect}
 like: #{like.inspect}
 this: #{this.inspect}")
 ```
+Key Bindings
+------------
+
+Copy these to your user key bindings file.
+
+<!-- keybindings start -->
+    { "keys": ["ctrl+p"], "command": "text_debugging" },
+<!-- keybindings stop -->
